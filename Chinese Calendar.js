@@ -1,6 +1,6 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
-// icon-color: cyan; icon-glyph: calendar-alt;
+// icon-color: deep-green; icon-glyph: calendar-alt;
 const lunar = importModule("./module/lunar.module")
 
 const monthCns = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
@@ -108,6 +108,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
   widget.addSpacer()
   widget.backgroundColor = Color.dynamic(Color.white(), Color.black())
   Script.setWidget(widget)
+  Script.complete()
 }
 
 function buildDayStack(dayStack, calDate, todayDate, events) {
@@ -164,7 +165,7 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
         break
       } else if (event.title.indexOf("休") != -1) {
         whTag = "休"
-        whColor = Color.dynamic(new Color("#06402B"), Color.green())
+        whColor = new Color("#228B22")
         break
       }
     }
