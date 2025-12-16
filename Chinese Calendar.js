@@ -80,7 +80,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
   lineStack.backgroundColor = Color.lightGray()
   seperateStack.addSpacer()
 
-  widget.addSpacer(10)
+  widget.addSpacer(9)
 
   //日历内容
   let firstDateInCalendar = new Date(firstDate)
@@ -98,10 +98,12 @@ if (config.runsInWidget && config.widgetFamily == "large") {
 
       daysStack.addSpacer()
     }
-    if (calLines == 6) {
-      widget.addSpacer(4)
-    } else {
-      widget.addSpacer(10)
+    if (i < calLines - 1) {
+      if (calLines == 6) {
+        widget.addSpacer(4)
+      } else {
+        widget.addSpacer(10)
+      }
     }
   }
 
