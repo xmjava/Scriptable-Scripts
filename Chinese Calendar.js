@@ -5,6 +5,16 @@ const lunar = importModule("./module/lunar.module")
 
 const monthCns = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
 const weekCns = ["日", "一", "二", "三", "四", "五", "六"]
+const foreignHolidays = [
+  { day: "2.14", title: "情人节", first: false },
+  { day: "5:2:0", title: "母亲节", first: true }, //5月第2个星期日
+  { day: "6:3:0", title: "父亲节", first: true }, //6月第3个星期日
+  { day: "10.31", title: "万圣夜", first: true },
+  { day: "11:L:4", title: "感恩节", first: true }, //11月最后一个星期四
+  { day: "12.24", title: "平安夜", first: true },
+  { day: "12.25", title: "圣诞节", first: true }
+]
+let foreignHolayDayCache = {}
 const dynamicBlackWhite = Color.dynamic(Color.black(), Color.white())
 
 if (config.runsInWidget && config.widgetFamily == "large") {
@@ -152,6 +162,20 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
       }
     }
   }
+  //国外节日
+  let foreignHolidayInfo = getForeignHoliday(calDate)
+  if (foreignHolidayInfo) {
+    if (eventTitle.length > 0) {
+      if (foreignHolidayInfo.first) {
+        eventTitle = foreignHolidayInfo.title
+      }
+    } else {
+      eventTitle = foreignHolidayInfo.title
+    }
+  }
+  if (eventTitle.startsWith("正月初")) {
+    eventTitle = ""
+  }
   if (eventTitle.length > 0) {
     lcDateLabel.text = eventTitle.substr(0, 2)
   }
@@ -216,6 +240,62 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
     // dayStack.backgroundColor = Color.red()
   }
   dayStack.backgroundImage = bgImage
+}
+
+function getForeignHoliday(calDate) {
+  for (holidayInfo of foreignHolidays) {
+    let day = null
+    if (holidayInfo.day.indexOf(".") != -1) {
+      //固定日期
+      day = holidayInfo.day
+    } else {
+      //非固定日期
+      let dayParts = holidayInfo.day.split(":")
+      if (calDate.getMonth() + 1 == parseInt(dayParts[0])) {
+        //先看缓存里有没有
+        if (holidayInfo.day in foreignHolayDayCache) {
+          //有缓存
+          day = foreignHolayDayCache[holidayInfo.day]
+        } else {
+          //计算出准确日期
+          let week = parseInt(dayParts[2])
+          if ("L" == dayParts[1]) {
+            //最后一个星期几
+            let lastDayInMonth = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0)
+            let hDate = new Date(lastDayInMonth)
+            if (lastDayInMonth.getDay() >= week) {
+              hDate.setDate(lastDayInMonth.getDate() - (lastDayInMonth.getDay() - week))
+            } else {
+              hDate.setDate(lastDayInMonth.getDate() - 7 + (week - lastDayInMonth.getDay()))
+            }
+            day = dayParts[0] + "." + hDate.getDate()
+            //放入缓存
+            foreignHolayDayCache[holidayInfo.day] = day
+          } else {
+            //第几个星期几
+            let num = parseInt(dayParts[1])
+            let firstDayInMonth = new Date(calDate.getFullYear(), calDate.getMonth(), 1)
+            let hDate = new Date(firstDayInMonth)
+            if (firstDayInMonth.getDay() <= week) {
+              hDate.setDate(firstDayInMonth.getDate() + (week - firstDayInMonth.getDay() + 7 * (num - 1)))
+            } else {
+              hDate.setDate(firstDayInMonth.getDate() + 7 * num - (firstDayInMonth.getDay() - week))
+            }
+            day = dayParts[0] + "." + hDate.getDate()
+            //放入缓存
+            foreignHolayDayCache[holidayInfo.day] = day
+          }
+        }
+      }
+    }
+    if (day) {
+      let dayParts = day.split(".")
+      if (calDate.getMonth() + 1 == parseInt(dayParts[0]) && calDate.getDate() == parseInt(dayParts[1])) {
+        return holidayInfo
+      }
+    }
+  }
+  return null
 }
 
 function getWeeksInMonth(todayDate) {
