@@ -15,6 +15,7 @@ const foreignHolidays = [
   { day: "12.25", title: "圣诞节", first: true }
 ]
 let foreignHolayDayCache = {}
+const importantChineseHolidays = ["元旦", "除夕", "春节", "元宵节", "儿童节", "端午节", "中秋节"]
 const dynamicBlackWhite = Color.dynamic(Color.black(), Color.white())
 
 if (config.runsInWidget && config.widgetFamily == "large") {
@@ -134,20 +135,20 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
 
   //公历日
   const gcDateStack = dayStack.addStack()
-  gcDateStack.addSpacer()
+  gcDateStack.size = new Size(dayStack.size.width, 0)
   const gcDateLabel = gcDateStack.addText(calDate.getDate().toString())
   gcDateLabel.font = Font.boldSystemFont(18)
-  gcDateStack.addSpacer()
+  gcDateLabel.centerAlignText()
 
   dayStack.addSpacer(1)
 
   //农历日
   let lunarInfo = lunar.sloarToLunar(calDate.getFullYear(), calDate.getMonth() + 1, calDate.getDate())
   const lcDateStack = dayStack.addStack()
-  lcDateStack.addSpacer()
+  lcDateStack.size = new Size(dayStack.size.width, 0)
   const lcDateLabel = lcDateStack.addText(lunarInfo.lunarDay == "初一" ? lunarInfo.lunarMonth + "月" : lunarInfo.lunarDay)
   lcDateLabel.font = Font.regularSystemFont(10)
-  lcDateStack.addSpacer()
+  lcDateLabel.centerAlignText()
   //节日/节气
   let eventTitle = ""
   for (event of events) {
@@ -162,23 +163,28 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
       }
     }
   }
+  let isImportantHoliday = false
   //国外节日
   let foreignHolidayInfo = getForeignHoliday(calDate)
   if (foreignHolidayInfo) {
     if (eventTitle.length > 0) {
       if (foreignHolidayInfo.first) {
         eventTitle = foreignHolidayInfo.title
+        isImportantHoliday = true
       }
     } else {
       eventTitle = foreignHolidayInfo.title
+      isImportantHoliday = true
     }
   }
   if (eventTitle.startsWith("正月初")) {
     eventTitle = ""
   }
   if (eventTitle.length > 0) {
-    lcDateLabel.text = eventTitle.substr(0, 2)
+    lcDateLabel.text = eventTitle.substr(0, 3)
   }
+  //中国节日
+  isImportantHoliday |= importantChineseHolidays.includes(eventTitle)
 
   //班/休标志
   let whTag = ""
@@ -224,7 +230,17 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
     lcDateLabel.textColor = dynamicBlackWhite
     if (calDate.getDay() == 0 || calDate.getDay() == 6) {
       //周末
-      gcDateLabel.textColor = Color.red()
+      if (whTag != "班") {
+        gcDateLabel.textColor = Color.red()
+        lcDateLabel.textColor = Color.red()
+      }
+    } else {
+      if (whTag == "休") {
+        gcDateLabel.textColor = Color.red()
+        lcDateLabel.textColor = Color.red()
+      }
+    }
+    if (isImportantHoliday) {
       lcDateLabel.textColor = Color.red()
     }
   } else {
@@ -259,32 +275,30 @@ function getForeignHoliday(calDate) {
         } else {
           //计算出准确日期
           let week = parseInt(dayParts[2])
+          let hDate = null
           if ("L" == dayParts[1]) {
             //最后一个星期几
             let lastDayInMonth = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0)
-            let hDate = new Date(lastDayInMonth)
+            hDate = new Date(lastDayInMonth)
             if (lastDayInMonth.getDay() >= week) {
               hDate.setDate(lastDayInMonth.getDate() - (lastDayInMonth.getDay() - week))
             } else {
               hDate.setDate(lastDayInMonth.getDate() - 7 + (week - lastDayInMonth.getDay()))
             }
-            day = dayParts[0] + "." + hDate.getDate()
-            //放入缓存
-            foreignHolayDayCache[holidayInfo.day] = day
           } else {
             //第几个星期几
             let num = parseInt(dayParts[1])
             let firstDayInMonth = new Date(calDate.getFullYear(), calDate.getMonth(), 1)
-            let hDate = new Date(firstDayInMonth)
+            hDate = new Date(firstDayInMonth)
             if (firstDayInMonth.getDay() <= week) {
               hDate.setDate(firstDayInMonth.getDate() + (week - firstDayInMonth.getDay() + 7 * (num - 1)))
             } else {
               hDate.setDate(firstDayInMonth.getDate() + 7 * num - (firstDayInMonth.getDay() - week))
             }
-            day = dayParts[0] + "." + hDate.getDate()
-            //放入缓存
-            foreignHolayDayCache[holidayInfo.day] = day
           }
+          day = dayParts[0] + "." + hDate.getDate()
+          //放入缓存
+          foreignHolayDayCache[holidayInfo.day] = day
         }
       }
     }
