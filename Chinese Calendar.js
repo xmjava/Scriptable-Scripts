@@ -10,6 +10,7 @@ const foreignHolidays = [
   { day: "5:2:0", title: "母亲节", first: true }, //5月第2个星期日
   { day: "6:3:0", title: "父亲节", first: true }, //6月第3个星期日
   { day: "10.31", title: "万圣夜", first: true },
+  { day: "11.1", title: "万圣节", first: true },
   { day: "11:L:4", title: "感恩节", first: true }, //11月最后一个星期四
   { day: "12.24", title: "平安夜", first: true },
   { day: "12.25", title: "圣诞节", first: true }
@@ -143,7 +144,7 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
   lcDateLabel.font = Font.regularSystemFont(10)
   lcDateLabel.centerAlignText()
 
-  dayStack.addSpacer(3)
+  dayStack.addSpacer(2)
   //节日/节气
   let eventTitle = ""
   for (event of events) {
