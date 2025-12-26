@@ -17,6 +17,7 @@ const foreignHolidays = [
 let foreignHolayDayCache = {}
 const importantChineseHolidays = ["元旦", "除夕", "春节", "元宵节", "儿童节", "端午节", "中秋节"]
 const dynamicBlackWhite = Color.dynamic(Color.black(), Color.white())
+const dynamicRed = Color.dynamic(new Color("#FF383C"), new Color("#FF4245"))
 
 if (config.runsInWidget && config.widgetFamily == "large") {
   const todayDate = new Date()
@@ -38,7 +39,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
   headStack.setPadding(0, 16, 0, 5)
   const monthStack = headStack.addStack()
   const monthLabel = monthStack.addText(currentMonthStr)
-  monthLabel.textColor = Color.red()
+  monthLabel.textColor = dynamicRed
   monthLabel.font = Font.boldSystemFont(24)
 
   headStack.addSpacer()
@@ -57,11 +58,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
   lunarYearLine2Label.textColor = dynamicBlackWhite
   lunarYearLine2Label.font = Font.regularSystemFont(10)
 
-  if (calLines == 6) {
-    widget.addSpacer(5)
-  } else {
-    widget.addSpacer(8)
-  }
+  widget.addSpacer(calLines == 6 ? 5 : 8)
 
   //星期标题行
   const weekStack = widget.addStack()
@@ -74,7 +71,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
     weekLabel.textColor = dynamicBlackWhite
     if (i == 0 || i == 6) {
       //周末
-      weekLabel.textColor = Color.red()
+      weekLabel.textColor = dynamicRed
     }
     weekLabel.font = Font.regularSystemFont(18)
     contentStack.addSpacer()
@@ -88,7 +85,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
   seperateStack.addSpacer(16)
   const lineStack = seperateStack.addStack()
   lineStack.size = new Size(312, 1)
-  lineStack.backgroundColor = Color.lightGray()
+  lineStack.backgroundColor = Color.dynamic(new Color("#C6C6C8"), new Color("#38383A"))//Color.lightGray()
   seperateStack.addSpacer()
 
   widget.addSpacer(9)
@@ -110,11 +107,7 @@ if (config.runsInWidget && config.widgetFamily == "large") {
       daysStack.addSpacer()
     }
     if (i < calLines - 1) {
-      if (calLines == 6) {
-        widget.addSpacer(4)
-      } else {
-        widget.addSpacer(10)
-      }
+      widget.addSpacer(calLines == 6 ? 4 : 10)
     }
   }
 
@@ -149,6 +142,8 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
   const lcDateLabel = lcDateStack.addText(lunarInfo.lunarDay == "初一" ? lunarInfo.lunarMonth + "月" : lunarInfo.lunarDay)
   lcDateLabel.font = Font.regularSystemFont(10)
   lcDateLabel.centerAlignText()
+
+  dayStack.addSpacer(3)
   //节日/节气
   let eventTitle = ""
   for (event of events) {
@@ -193,7 +188,7 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
     if (event.calendar.title == "中国大陆节假日") {
       if (event.title.indexOf("班") != -1) {
         whTag = "班"
-        whColor = Color.red()
+        whColor = dynamicRed
         break
       } else if (event.title.indexOf("休") != -1) {
         whTag = "休"
@@ -231,17 +226,17 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
     if (calDate.getDay() == 0 || calDate.getDay() == 6) {
       //周末
       if (whTag != "班") {
-        gcDateLabel.textColor = Color.red()
-        lcDateLabel.textColor = Color.red()
+        gcDateLabel.textColor = dynamicRed
+        lcDateLabel.textColor = dynamicRed
       }
     } else {
       if (whTag == "休") {
-        gcDateLabel.textColor = Color.red()
-        lcDateLabel.textColor = Color.red()
+        gcDateLabel.textColor = dynamicRed
+        lcDateLabel.textColor = dynamicRed
       }
     }
     if (isImportantHoliday) {
-      lcDateLabel.textColor = Color.red()
+      lcDateLabel.textColor = dynamicRed
     }
   } else {
     //非本月日期
@@ -250,10 +245,8 @@ function buildDayStack(dayStack, calDate, todayDate, events) {
   }
   if (isToday) {
     //今天
-    // dayStack.cornerRadius = dayStack.size.width / 2
     gcDateLabel.textColor = Color.white()
     lcDateLabel.textColor = Color.white()
-    // dayStack.backgroundColor = Color.red()
   }
   dayStack.backgroundImage = bgImage
 }
